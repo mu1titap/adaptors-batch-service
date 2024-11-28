@@ -1,0 +1,1 @@
+# adaptors-batch-service
