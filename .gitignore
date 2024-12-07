@@ -22,11 +22,13 @@ bin/
 *.iws
 *.iml
 *.ipr
+src/main/resources/application.yml
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 src/test
-src/main/resources/application.yml
+#**/SwaggerConfig.class
+#**/SwaggerConfig.java
 
 ### NetBeans ###
 /nbproject/private/
