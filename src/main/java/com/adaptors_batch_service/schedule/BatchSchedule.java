@@ -25,10 +25,10 @@ public class BatchSchedule {
     /**
      * 멘토링 별 리뷰 집계 매일 00 시 마다 실행
      */
-    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
-    public void runProductReviewStarJdbcJob() throws Exception {
+    @Scheduled(cron = "0 0 0/3 * * *", zone = "Asia/Seoul") // 00시 부터 3시간 마다 실행
+    public void runReviewStarJdbcJob() throws Exception {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
         String date = dateFormat.format(new Date());
 
         JobParameters jobParameters = new JobParametersBuilder()
@@ -38,5 +38,20 @@ public class BatchSchedule {
         jobLauncher.run(jobRegistry.getJob("productReviewStarJdbcJob"), jobParameters);
     }
 
+    /**
+     * 멘토링 별 리뷰 집계 매일 00 시 마다 실행
+     */
+    @Scheduled(cron = "0 0 1/3 * * *", zone = "Asia/Seoul") // 01시 부터 3시간 마다 실행
+    public void runMentorOverviewJdbcJob() throws Exception {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
+        String date = dateFormat.format(new Date());
+
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("date", date)
+                .toJobParameters();
+
+        jobLauncher.run(jobRegistry.getJob("mentorOverviewJob"), jobParameters);
+    }
 
 }
