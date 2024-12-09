@@ -15,6 +15,8 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @Table(name = "mentor_overview", uniqueConstraints = {
         @UniqueConstraint(columnNames = "mentor_uuid") // 에 대한 유니크 제약 조건 설정
+}, indexes = {
+        @Index(name = "idx_total_score", columnList = "total_score")
 })
 public class MentorOverView extends BaseEntity {
 

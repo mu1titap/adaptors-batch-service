@@ -6,15 +6,12 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @ResponseBody
 @RequestMapping("/api/v1/batch/review")
-@Tag(name = "배치", description = "리뷰 배치(조회용 X)")
+@Tag(name = "배치", description = "(조회용 X)")
 
 public class BatchReviewController {
 
@@ -26,8 +23,7 @@ public class BatchReviewController {
         this.jobRegistry = jobRegistry;
     }
 
-
-    @GetMapping("/jdbc/review")
+    @PostMapping("/jdbc/review")
     public String jdbcReviewApi(@RequestParam("value") String value) throws Exception {
 
         JobParameters jobParameters = new JobParametersBuilder()
