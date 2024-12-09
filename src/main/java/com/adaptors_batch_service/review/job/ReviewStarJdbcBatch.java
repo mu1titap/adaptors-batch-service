@@ -10,17 +10,21 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
 import org.springframework.batch.item.database.Order;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
+import org.springframework.batch.item.support.CompositeItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -31,6 +35,10 @@ public class ReviewStarJdbcBatch {
     private final PlatformTransactionManager platformTransactionManager;
     private final DataSource dataSource; // 데이터 소스 주입
     private final JobExecutionListener jobExecutionListener;
+    private final KafkaTemplate<String, ReviewStarDto> kafkaReviewStarTemplate; // KafkaTemplate 주입
+    private static final String TOPIC_NAME = "review-aggregation-topic";
+
+
 
     // 배치 작업 정의
     @Bean
@@ -47,8 +55,10 @@ public class ReviewStarJdbcBatch {
         return new StepBuilder("mentoringReviewStarJdbcStep", jobRepository)
                 .<ReviewStarDto, ReviewStarDto>chunk(10, platformTransactionManager) // chunk size 설정
                 .reader(reviewStarJdbcReader())
-                //.processor(reviewStarProcessor())
-                .writer(reviewStarJdbcWriter())
+                .processor(reviewStarProcessor())
+                //.writer(reviewStarJdbcWriter())
+                .writer(compositeItemWriter()) // Writer를 Composite으로 구성
+
                 .build();
     }
 
@@ -75,12 +85,14 @@ public class ReviewStarJdbcBatch {
                 .pageSize(10)
                 .build();
     }
-
-//    @Bean(name = "jdbcReviewStarProcessor")
-//    public ItemProcessor<ReviewStarDto, ReviewStarDto> reviewStarProcessor() {
-//        return reviewStarDto -> reviewStarDto; // 딱히 처리 X , 생략해도 무방함
-//    }
-
+    // Processor 정의 (Kafka 발행 데이터 준비)
+    @Bean
+    public ItemProcessor<ReviewStarDto, ReviewStarDto> reviewStarProcessor() {
+        return reviewStarDto -> {
+            // 필요한 가공 작업 추가 가능
+            return reviewStarDto;
+        };
+    }
     @Bean
     public JdbcBatchItemWriter<ReviewStarDto> reviewStarJdbcWriter() {
         return new JdbcBatchItemWriterBuilder<ReviewStarDto>()
@@ -96,5 +108,24 @@ public class ReviewStarJdbcBatch {
                 // ReviewStarDto의 필드 값 sql 파라미터에 매핑
                 .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
                 .build();
+    }
+    // Writer 2: Kafka 이벤트 발행
+    @Bean
+    public ItemWriter<ReviewStarDto> reviewStarKafkaWriter() {
+        return items -> items.forEach(item -> {
+            try {
+                kafkaReviewStarTemplate.send(TOPIC_NAME, item);
+                log.info("Kafka 리뷰 JOB 이벤트 발행 성공: {}", item);
+            } catch (Exception e) {
+                log.error("Kafka 리뷰 JOB  이벤트 발행 실패: {}", item, e);
+                throw e;
+            }
+        });
+    }
+    @Bean
+    public CompositeItemWriter<ReviewStarDto> compositeItemWriter() {
+        CompositeItemWriter<ReviewStarDto> compositeItemWriter = new CompositeItemWriter<>();
+        compositeItemWriter.setDelegates(List.of(reviewStarJdbcWriter(), reviewStarKafkaWriter()));
+        return compositeItemWriter;
     }
 }
