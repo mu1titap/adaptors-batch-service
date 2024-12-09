@@ -23,10 +23,10 @@ public class BatchSchedule {
 
 
     /**
-     * 멘토링 별 리뷰 집계 매일 00 시 마다 실행
+     * 멘토링 별 집계 매일 00 시 마다 실행
      */
     @Scheduled(cron = "0 0 0/3 * * *", zone = "Asia/Seoul") // 00시 부터 3시간 마다 실행
-    public void runReviewStarJdbcJob() throws Exception {
+    public void runMentoringJdbcJob() throws Exception {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
         String date = dateFormat.format(new Date());
@@ -35,7 +35,7 @@ public class BatchSchedule {
                 .addString("date", date)
                 .toJobParameters();
 
-        jobLauncher.run(jobRegistry.getJob("productReviewStarJdbcJob"), jobParameters);
+        jobLauncher.run(jobRegistry.getJob("mentoringOverviewJob"), jobParameters);
     }
 
     /**
