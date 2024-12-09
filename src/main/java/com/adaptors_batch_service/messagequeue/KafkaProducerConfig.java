@@ -1,6 +1,6 @@
 package com.adaptors_batch_service.messagequeue;
 
-import com.adaptors_batch_service.review.dto.out.ReviewStarDto;
+import com.adaptors_batch_service.mentoringOverview.dto.out.MentoringOverviewDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +20,11 @@ import java.util.Map;
 public class KafkaProducerConfig {
     @Value("${kafka.cluster.uri}")
     private String kafkaClusterUri;
-    // 세션 참가
 
-    //
 
+    // 멘토링 집계
     @Bean
-    public ProducerFactory<String, ReviewStarDto> reviewStarProducerFactory() {
+    public ProducerFactory<String, MentoringOverviewDto> mentoringOverviewProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaClusterUri);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -33,10 +32,9 @@ public class KafkaProducerConfig {
         return new DefaultKafkaProducerFactory<>(configProps);
     }
     @Bean
-    public KafkaTemplate<String, ReviewStarDto> kafkaReviewStarTemplate() {
-        return new KafkaTemplate<>(reviewStarProducerFactory());
+    public KafkaTemplate<String, MentoringOverviewDto> kafkaMentoringOverviewTemplate() {
+        return new KafkaTemplate<>(mentoringOverviewProducerFactory());
     }
-
 
 
 }
