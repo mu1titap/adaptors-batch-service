@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ResponseBody
 @RequestMapping("/api/v1/batch/mentoring")
 @Tag(name = "배치", description = "(조회용 X)")
-
+//
 public class BatchMentoringController {
 
     private final JobLauncher jobLauncher;
