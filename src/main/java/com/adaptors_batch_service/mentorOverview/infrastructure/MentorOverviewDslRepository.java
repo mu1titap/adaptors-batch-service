@@ -7,6 +7,9 @@ import com.adaptors_batch_service.mentorOverview.dto.out.QMentorOverviewResponse
 import com.adaptors_batch_service.mentorOverview.entity.QMentorOverView;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -36,6 +39,21 @@ public class MentorOverviewDslRepository {
                 .limit(limit)
                 .fetch();
 //        return null;
+    }
+
+    public Page<BestMentorResponseDto> getBestMentorListPagination(Pageable pageable){
+        List<BestMentorResponseDto> results = queryFactory.select(new QBestMentorResponseDto(mentorOverView.mentorUuid, mentorOverView.nickName,
+                        mentorOverView.profileImageUrl, mentorOverView.totalReviewCount, mentorOverView.reviewStarAvg,
+                        mentorOverView.totalLikeCount, mentorOverView.totalSaleCount))
+                .from(mentorOverView)
+                .orderBy(mentorOverView.totalSaleCount.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory.selectFrom(mentorOverView).fetchCount();
+
+        return new PageImpl<>(results, pageable, total);
     }
 
 
