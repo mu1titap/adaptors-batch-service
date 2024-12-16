@@ -46,6 +46,18 @@ public class MentorOverViewController {
         );
     }
 
+    @GetMapping("/best-mentor-list-pagination")
+    @Operation(summary = "베스트 멘토 리스트 조회 (pagination)" , description = "총 점수 내림차순으로 출력<br>" +
+            " -점수 기준-<br>" +
+            " 1. 좋아요 하나당 0.2점 <br>" +
+            " 2. 리뷰 1점 = -2 , 2점 = -1, 3점 = 0, 4점 = 1, 5점 = 2 <br>" +
+            " 3. 완료된 멘티의 세션 신청 1개당 1점 <br>")
+    public BaseResponse<Page<BestMentorResponseDto>> getBestMentorListPagination(@ParameterObject Pageable pageable){
+        return new BaseResponse<>(
+                mentorOverviewDslRepository.getBestMentorListPagination(pageable)
+        );
+    }
+
 
 
 }
